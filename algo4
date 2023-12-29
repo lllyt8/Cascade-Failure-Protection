@@ -1,0 +1,105 @@
+import networkx as nx
+
+G = nx.cycle_graph(10)
+
+dummy_node = 'D'
+G.add_node(dummy_node)
+
+for node in G.nodes():
+    if node != dummy_node:
+        G.add_edge(dummy_node, node)
+
+T = nx.dfs_tree(G, source=dummy_node)
+
+def subtree_size(node, tree, visited):
+    if node in visited:
+        return 0
+    visited.add(node)
+    size = 1  # Counting the node itself
+    for neighbor in tree.neighbors(node):
+        size += subtree_size(neighbor, tree, visited)
+    return size
+
+
+RD_values = {}
+for u, v in T.edges():
+    visited = set()
+    RD_values[(u, v)] = subtree_size(v, T, visited)
+
+RD_values
+
+
+
+C = []  
+L = G.edges()  
+Me = {}  
+Mn = {}  
+Mv = {} 
+Q = set()  
+ΔeRD = {edge: 0 for edge in G.edges()} 
+def find_back_edges(tree, graph):
+    back_edges = []
+    tree_edges = list(tree.edges())
+    for edge in graph.edges():
+        if edge not in tree_edges and (edge[1], edge[0]) not in tree_edges:
+            back_edges.append(edge)
+    return back_edges, tree_edges
+
+back_edges, tree_edges = find_back_edges(T, G)
+
+L = list(set(L) - set(tree_edges))
+
+back_edges, tree_edges, L
+
+
+
+j = 0
+
+for vi in G.nodes():
+    for back_edge in back_edges:
+        if vi in back_edge:
+            Cj = [back_edge]
+            ec = back_edge
+            vend = back_edge[1] if back_edge[0] == vi else back_edge[0]
+            Vvisited = {vend}
+
+            if vi not in Q:
+                Q.add(vend)
+
+            while vend not in Q:
+                for te in T.edges(vend):
+                    if te[1] != vend:
+                        et = te
+                        break
+                
+                Cj.append(et)
+                ec = et
+                vend = et[1]
+                Vvisited.add(vend)
+            
+            C.append(Cj)
+            Mn[vend] = Cj
+            Mv[j] = Vvisited
+            for e in Cj:
+                Me[e] = Cj
+                
+            j += 1
+
+unique_C = []
+for chain in C:
+    if chain not in unique_C:
+        unique_C.append(chain)
+C = unique_C
+
+C, Me, Mn, Mv, Q
+
+
+
+
+for Ci in C:
+    for e in Ci:
+        if e in L:
+            L.remove(e)
+        ΔeRD[e] = 0
+
+ΔeRD, L
